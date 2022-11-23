@@ -9,19 +9,13 @@ server {
     client_max_body_size 75M;   # adjust to taste
 
     location /static/ {
-        alias /web/dj3/static/; # your Django project's static files - amend as required
+        alias /var/www/static/; # your Django project's static files - amend as required
     }
 
     location / {
         # using uwsgi protocal
         uwsgi_pass uwsgi;
-        # uwsgi_pass web:8003;
         include /etc/nginx/uwsgi_params; # the uwsgi_params file you installed
-        # using uwsgi protocal 
-        # using http protocal
-        # proxy_pass http://uwsgi;  # using http protocal
-        # proxy_pass http://web:8003/;  # using http protocal
-        # using uwsgi protocal
     }
 
 }

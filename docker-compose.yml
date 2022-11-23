@@ -13,13 +13,13 @@ services:
     build:
       context: ./workspace
       args:
-        - APP_CODE_PATH:${APP_CODE_PATH}
-        - APP_CODE_PATH_CONTAINER:${APP_CODE_PATH_CONTAINER}
+        - DJANDOCK_PYTHON_VERSION=${PYTHON_VERSION}
     volumes:
       - ${APP_CODE_PATH}:${APP_CODE_PATH_CONTAINER}
       - ${DATA_PATH}/uwsgi:/var/log/uwsgi
     ports:
       - "${SSH_PORT}:22"
+      - "127.0.0.1:${BUILT_IN_SERVER_PORT}:8000"
     tty: true
     command: /startup.sh ${APP_CODE_PATH_CONTAINER} ${NGINX_UPSTREAM_PORT} 
     expose:
@@ -31,8 +31,7 @@ services:
     build:
       context: ./nginx
       args:
-        - APP_CODE_PATH_CONTAINER:${APP_CODE_PATH_CONTAINER}
-        - NGINX_UPSTREAM_PORT:${NGINX_UPSTREAM_PORT}
+        - NGINX_UPSTREAM_PORT=${NGINX_UPSTREAM_PORT}
     volumes:
       - ${APP_CODE_PATH}:${APP_CODE_PATH_CONTAINER}
       - ${DATA_PATH}/nginx:/var/log/nginx
