@@ -1,0 +1,75 @@
+version: '3.9'
+
+networks:
+  server:
+    driver: bridge
+
+volumes:
+  pgdata:
+    driver: local
+
+services:
+  workspace:
+    build:
+      context: ./workspace
+      args:
+        - APP_CODE_PATH:${APP_CODE_PATH}
+        - APP_CODE_PATH_CONTAINER:${APP_CODE_PATH_CONTAINER}
+    volumes:
+      - ${APP_CODE_PATH}:${APP_CODE_PATH_CONTAINER}
+      - ${DATA_PATH}/uwsgi:/var/log/uwsgi
+    ports:
+      - "${SSH_PORT}:22"
+    tty: true
+    command: /startup.sh ${APP_CODE_PATH_CONTAINER} ${NGINX_UPSTREAM_PORT} 
+    expose:
+      - "${NGINX_UPSTREAM_PORT}"
+    networks:
+      - server
+
+  nginx:
+    build:
+      context: ./nginx
+      args:
+        - APP_CODE_PATH_CONTAINER:${APP_CODE_PATH_CONTAINER}
+        - NGINX_UPSTREAM_PORT:${NGINX_UPSTREAM_PORT}
+    volumes:
+      - ${APP_CODE_PATH}:${APP_CODE_PATH_CONTAINER}
+      - ${DATA_PATH}/nginx:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+    restart: always
+    ports:
+      - "${NGINX_HTTP_PORT}:80"
+      - "${NGINX_HTTPS_PORT}:443"
+    tty: true
+    depends_on:
+      - workspace
+    networks:
+      - server
+
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ${DATA_PATH}/postgres:/var/lib/postgresql/data
+    networks:
+      - server
+
+  pgAdmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      - postgres
+    networks:
+      - server
