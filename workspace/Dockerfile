@@ -9,6 +9,10 @@ ENV PYTHONUNBUFFERED 1
 COPY startup.sh /
 COPY uwsgi.ini /
 
-RUN pip install uwsgi
+RUN apt update && \
+    apt install dos2unix && \
+    dos2unix /startup.sh && \
+    apt remove dos2unix -y && \
+    apt clean -y
 
-ENTRYPOINT []
+RUN pip install uwsgi
