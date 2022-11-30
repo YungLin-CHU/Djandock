@@ -14,6 +14,7 @@ services:
       context: ./workspace
       args:
         - DJANDOCK_PYTHON_VERSION=${PYTHON_VERSION}
+        - INSTALL_NODE=${INSTALL_NODE}
     volumes:
       - ${APP_CODE_PATH}:${APP_CODE_PATH_CONTAINER}
       - ${DATA_PATH}/uwsgi:/var/log/uwsgi
